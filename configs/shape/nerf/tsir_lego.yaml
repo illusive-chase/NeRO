@@ -1,8 +1,8 @@
-name: lego_shape
+name: tsir_lego_shape
 
 ####network#####
 network: shape
-database_name: nerf/lego
+database_name: nerf/tsir_lego
 apply_acc_loss: true
 occ_loss_step: 20000
 is_nerf: true
@@ -16,15 +16,15 @@ freeze_inv_s_step: 15000
 
 ####dataset#####
 train_dataset_type: dummy
-dataset_dir: /data/gaochong/project/datasets/nerf_synthetic
+dataset_dir: /data/gaochong/project/datasets/Tensoir_Nerf/
 train_dataset_cfg:
-  database_name: nerf/lego
+  database_name: nerf/tsir_lego
 val_set_list:
   -
     name: val
     type: dummy
     cfg:
-      database_name: nerf/lego
+      database_name: nerf/tsir_lego
 
 ####trainier####
 optimizer_type: adam

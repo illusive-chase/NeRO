@@ -1,9 +1,9 @@
-name: hotdog_material
+name: chair_material
 
 ####network#####
 network: material
-database_name: nerf/hotdog
-mesh: /data/gaochong/project/NeRO/data/meshes/hotdog_shape-300000.ply
+database_name: nerf/chair
+mesh: data/meshes/chair_shape-300000.ply
 is_nerf: true
 
 reg_diffuse_light: true
@@ -24,16 +24,16 @@ key_metric_name: psnr
 
 ####dataset#####
 train_dataset_type: dummy
-dataset_dir: /data/gaochong/project/datasets/Synthetic4Relight_Nerf/
+dataset_dir: your_dataset_dir
 train_dataset_cfg:
-  database_name: nerf/hotdog
+  database_name: nerf/chair
   dataset_dir:
 val_set_list:
   -
     name: val
     type: dummy
     cfg:
-      database_name: nerf/hotdog
+      database_name: nerf/chair
 
 ####trainier####
 optimizer_type: adam

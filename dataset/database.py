@@ -436,7 +436,12 @@ class NeRFSyntheticDatabase(BaseDatabase):
                 skip = testskip
 
             for frame in meta['frames'][::skip]:
-                fname = os.path.join(self.root, frame['file_path'] + '.png')
+                if 'Tensoir_Nerf' in self.root:
+                    fname = os.path.join(self.root, frame['file_path'] + '.png')
+                elif 'Synthetic4Relight_Nerf' in self.root:
+                    fname = os.path.join(self.root, frame['file_path'])
+                else:
+                    raise 'Unknown dataset'
                 imgs.append(imageio.imread(fname))
                 poses.append(np.array(frame['transform_matrix']))
             imgs = (np.array(imgs) / 255.).astype(np.float32)  # keep all 4 channels (RGBA)

@@ -1,15 +1,21 @@
 import argparse
 import os
 import sys
-from pathlib import Path
-import numpy as np
 from collections import defaultdict
+from pathlib import Path
+
+import numpy as np
 
 print(os.path.abspath('.'))
 sys.path.append(os.path.abspath('.'))
-from blender_backend.blender_utils import setup, set_camera_by_pose, generate_relghting_poses, add_env_light
-
 import bpy
+from blender_backend.blender_utils import (
+    add_env_light,
+    generate_relghting_poses,
+    generate_relghting_poses_from_file,
+    set_camera_by_pose,
+    setup,
+)
 
 
 def render():
@@ -43,9 +49,9 @@ def render():
             mat_vert_color.data[l_ix].color.data.color[0] = metallic[v_ix,0]
             mat_vert_color.data[l_ix].color.data.color[1] = roughness[v_ix,0]
 
-    if args.trans:
-        # trans = np.asarray([[1,0,0],[0,0,-1],[0,1,0]],np.float32)
-        obj.rotation_euler[0]=np.pi/2
+    # if args.trans:
+    #     # trans = np.asarray([[1,0,0],[0,0,-1],[0,1,0]],np.float32)
+    #     obj.rotation_euler[0]=np.pi/2
 
     # create a material
     material = bpy.data.materials.new(name='mat')
@@ -75,10 +81,12 @@ def render():
     add_env_light(fn=args.env_fn)
 
     camera = bpy.data.objects['Camera']
-    cam_poses = generate_relghting_poses(args.num, args.azimuth, args.elevation, args.cam_dist)
+    if 0:
+        cam_poses = generate_relghting_poses(args.num, args.azimuth, args.elevation, args.cam_dist)
+    cam_poses = generate_relghting_poses_from_file(args.json)
 
     print('rendering ...')
-    for k in range(args.num):
+    for k in range(cam_poses.shape[0]):
         if os.path.exists(f'{args.output}/{k}.png'): continue
         bpy.context.scene.render.filepath = f'{args.output}/{k}'
         set_camera_by_pose(camera, cam_poses[k])
@@ -90,6 +98,8 @@ if __name__=="__main__":
     parser.add_argument('--env_fn', type=str, default='data/hdr/')
     parser.add_argument('--mesh', type=str, default='data/meshes/bell_shape-300000.ply')
     parser.add_argument('--material', type=str, default='data/materials/bell_material-100000')
+
+    parser.add_argument('--json', type=str)
 
     parser.add_argument('--width', type=int, default=800)
     parser.add_argument('--height', type=int, default=800)

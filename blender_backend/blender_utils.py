@@ -1,7 +1,10 @@
+import json
 import math
+import os
+
 import bpy
 import numpy as np
-import os
+
 
 def quaternion_from_matrix(matrix, isprecise=False):
     M = np.array(matrix, dtype=np.float64, copy=False)[:4, :4]
@@ -45,7 +48,7 @@ def quaternion_from_matrix(matrix, isprecise=False):
         np.negative(q, q)
     return q
 
-def set_camera_by_pose(camera, pose):
+def set_camera_by_pose(camera, pose, fov=0.691111):
     # seems the coordinate of blender is aligned by y+ to z and x+ to x+
     R_blender = np.asarray([[1,0,0],
                             [0,0,-1],
@@ -53,9 +56,10 @@ def set_camera_by_pose(camera, pose):
     cam_pt = (pose[:,:3].T @ -pose[:,3:])[...,0] # 3 in x_wrd
     cam_rot = pose[:,:3]
     # x_cam = R_rot @ x_wrd = R @ R_blender.T @ x_blender
-    cam_rot = cam_rot @ R_blender.T
-    cam_pt = R_blender @ cam_pt
-    cam_rot = np.diag([1,-1,-1]) @ cam_rot
+    if 0:
+        cam_rot = cam_rot @ R_blender.T
+        cam_pt = R_blender @ cam_pt
+        cam_rot = np.diag([1,-1,-1]) @ cam_rot
 
     camera.location[0] = cam_pt[0]
     camera.location[1] = cam_pt[1]
@@ -66,6 +70,8 @@ def set_camera_by_pose(camera, pose):
     camera.rotation_quaternion[1] = q[1]
     camera.rotation_quaternion[2] = q[2]
     camera.rotation_quaternion[3] = q[3]
+    camera.data.lens_unit = 'FOV'
+    camera.data.angle = fov
 
 def add_env_light(fn):
     world_tree = bpy.context.scene.world.node_tree
@@ -114,6 +120,14 @@ def generate_relghting_poses(num, azimuth, elevation, dist):
     cam_trans = np.repeat(cam_trans,num,0) # 32,3,1
     poses = np.concatenate([cam_rots,cam_trans],-1)
     return poses
+
+def generate_relghting_poses_from_file(filename):
+    with open(filename, 'r') as f:
+        meta = json.loads(f.read())
+    poses = np.linalg.inv(np.array([frame['transform_matrix'] for frame in meta['frames']]))
+    poses[:, :3, 3:] *= 1 / 2
+    # camera_angle_x = float(meta["camera_angle_x"])
+    return poses[:, :3, :]
 
 def add_env_light(fn):
     world_tree = bpy.context.scene.world.node_tree
