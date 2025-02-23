@@ -7,6 +7,7 @@ list="airbaloons chair hotdog jugs"
 envmaps="envmap6 envmap12"
 for envmap in $envmaps
 do
+echo $envmap
 for i in $list
 do
     # Stage I: Shape reconstruction
@@ -22,12 +23,14 @@ do
     # python extract_materials.py --cfg configs/material/nerf/${i}.yaml
 
     # Stage III: Run relighting script
+    echo $i
     python relight.py --blender ./blender-3.4.0-linux-x64/blender \
                   --name $i-$envmap \
                   --mesh data/meshes/${i}_shape-300000.ply \
                   --material data/materials/${i}_material-100000 \
-                  --hdr /data/gaochong/project/datasets/Synthetic4Relight_Nerf/hdr/$envmap.exr \
-                  --json /data/gaochong/project/datasets/Synthetic4Relight_Nerf/$i/transforms_test.json
+                  --hdr /root/autodl-tmp/data/yekai/dev/RadianceFieldStudio/data/Synthetic4Relight/$envmap.exr \
+                  --json /root/autodl-tmp/data/yekai/dev/RadianceFieldStudio/data/Synthetic4Relight/$i/transforms_test.json \
+                  --albedo_scaling data/materials/${i}_material-100000/albedo_scaling.npy 2>&1 >> temp.log
 
 done
 done

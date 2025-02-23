@@ -10,6 +10,7 @@ def main():
     parser.add_argument('--material', type=str)
     parser.add_argument('--hdr', type=str)
     parser.add_argument('--name', type=str)
+    parser.add_argument('--albedo_scaling', type=str, default='')
     parser.add_argument('--trans', dest='trans', action='store_true', default=False)
     args = parser.parse_args()
 
@@ -20,6 +21,7 @@ def main():
         '--mesh', args.mesh,
         '--material', args.material,
         '--env_fn', args.hdr,
+        '--albedo_scaling', args.albedo_scaling,
     ]
     if args.trans:
         cmds.append('--trans')

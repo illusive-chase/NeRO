@@ -4,3 +4,4 @@ data
 .vscode
 blender-3.4.0-linux-x64
 submodule
+temp*

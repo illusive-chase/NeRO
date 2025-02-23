@@ -17,6 +17,25 @@ from blender_backend.blender_utils import (
     setup,
 )
 
+def linear_to_srgb(linear):
+    if isinstance(linear, np.ndarray):
+        eps = np.finfo(np.float32).eps
+        srgb0 = 323 / 25 * linear
+        srgb1 = (211 * np.maximum(eps, linear) ** (5 / 12) - 11) / 200
+        return np.where(linear <= 0.0031308, srgb0, srgb1)
+    else:
+        raise NotImplementedError
+
+
+def srgb_to_linear(srgb):
+    if isinstance(srgb, np.ndarray):
+        """Assumes `srgb` is in [0, 1], see https://en.wikipedia.org/wiki/SRGB."""
+        eps = np.finfo(np.float32).eps
+        linear0 = 25 / 323 * srgb
+        linear1 = np.maximum(((200 * srgb + 11) / (211)), eps) ** (12 / 5)
+        return np.where(srgb <= 0.04045, linear0, linear1)
+    else:
+        raise NotImplementedError
 
 def render():
     args.output = os.path.abspath(args.output)
@@ -32,6 +51,10 @@ def render():
     metallic = np.load(f'{args.material}/metallic.npy')
     roughness = np.load(f'{args.material}/roughness.npy')
     albedo = np.load(f'{args.material}/albedo.npy')
+
+    if args.albedo_scaling:
+        albedo_scaling = np.load(args.albedo_scaling)
+        albedo = linear_to_srgb(np.clip(srgb_to_linear(albedo) * albedo_scaling, 0.0, 1.0))
 
     mat_vert_color = obj.data.vertex_colors.new()
     rgb_vert_color = obj.data.vertex_colors.new()
@@ -87,8 +110,8 @@ def render():
 
     print('rendering ...')
     for k in range(cam_poses.shape[0]):
-        if os.path.exists(f'{args.output}/{k}.png'): continue
-        bpy.context.scene.render.filepath = f'{args.output}/{k}'
+        if os.path.exists(f'{args.output}/{k:04d}.png'): continue
+        bpy.context.scene.render.filepath = f'{args.output}/{k:04d}'
         set_camera_by_pose(camera, cam_poses[k])
         bpy.ops.render.render(write_still=True)
 
@@ -96,6 +119,7 @@ if __name__=="__main__":
     parser = argparse.ArgumentParser(description='Renders given obj file by rotation a camera around it.')
     parser.add_argument('--output', type=str, default='data/relight')
     parser.add_argument('--env_fn', type=str, default='data/hdr/')
+    parser.add_argument('--albedo_scaling', type=str, default='')
     parser.add_argument('--mesh', type=str, default='data/meshes/bell_shape-300000.ply')
     parser.add_argument('--material', type=str, default='data/materials/bell_material-100000')
 
