@@ -3,12 +3,13 @@
 # list="ball car coffee helmet teapot toaster"
 # list="ball car"
 
-list="tsir_arm tsir_ficus tsir_hotdog tsir_lego"
-envmaps="bridge city fireplace forest night sunset"
-# list="tsir_arm"
-# envmaps="bridge"
+list="arm ficus hotdog lego"
+envmaps="bridge city fireplace forest night"
+# list="hotdog"
+# envmaps="city"
 for envmap in $envmaps
 do
+echo $envmap
 for i in $list
 do
     # Stage I: Shape reconstruction
@@ -24,12 +25,14 @@ do
     # python extract_materials.py --cfg configs/material/nerf/${i}.yaml
 
     # Stage III: Run relighting script
+    echo $i
     python relight.py --blender ./blender-3.4.0-linux-x64/blender \
-                  --name $i-$envmap \
-                  --mesh data/meshes/${i}_shape-300000.ply \
-                  --material data/materials/${i}_material-100000 \
-                  --hdr /data/gaochong/project/datasets//Tensoir_Nerf/hdr/$envmap.hdr \
-                  --json /data/gaochong/project/datasets//Tensoir_Nerf/$i/transforms_test.json
+                  --name tsir_$i-$envmap \
+                  --mesh data/meshes/tsir_${i}_shape-300000.ply \
+                  --material data/materials/tsir_${i}_material-100000 \
+                  --hdr data/$envmap.hdr \
+                  --json data/$i.json \
+                  --albedo_scaling data/materials/tsir_${i}_material-100000/albedo_scaling.npy 2>&1 >> temp.log
 
 done
 done
